@@ -1,16 +1,61 @@
 import { useState } from 'react'
 import { useTimerStore } from '../store/timerStore'
 
-const PRESET_MINUTES = [10, 15, 20, 30, 45, 60]
+function Spinner({
+  value,
+  min,
+  max,
+  label,
+  onChange,
+}: {
+  value: number
+  min: number
+  max: number
+  label: string
+  onChange: (v: number) => void
+}) {
+  return (
+    <div className="spinner">
+      <button
+        className="spinner-btn"
+        onClick={() => onChange(Math.min(max, value + 1))}
+      >
+        ▲
+      </button>
+      <div className="spinner-value">
+        {String(value).padStart(2, '0')}
+        <span className="spinner-label">{label}</span>
+      </div>
+      <button
+        className="spinner-btn"
+        onClick={() => onChange(Math.max(min, value - 1))}
+      >
+        ▼
+      </button>
+    </div>
+  )
+}
 
 export function SettingsScreen() {
-  const { totalMinutes, pin, setTotalMinutes, setPin, startTimer } = useTimerStore()
+  const { durationMinutes, durationSeconds, pin, setDuration, setPin, startTimer } =
+    useTimerStore()
+
+  const [minutes, setMinutes] = useState(durationMinutes)
+  const [seconds, setSeconds] = useState(durationSeconds)
   const [pinInput, setPinInput] = useState(pin)
   const [showPinEdit, setShowPinEdit] = useState(false)
 
-  const handleStart = () => {
-    startTimer()
+  const handleChangeMinutes = (v: number) => {
+    setMinutes(v)
+    setDuration(v, seconds)
   }
+
+  const handleChangeSeconds = (v: number) => {
+    setSeconds(v)
+    setDuration(minutes, v)
+  }
+
+  const canStart = minutes > 0 || seconds > 0
 
   return (
     <div className="screen settings-screen">
@@ -22,17 +67,10 @@ export function SettingsScreen() {
 
       <div className="settings-section">
         <h2 className="section-label">⏱ みる じかん</h2>
-        <div className="preset-grid">
-          {PRESET_MINUTES.map((m) => (
-            <button
-              key={m}
-              className={`preset-btn ${totalMinutes === m ? 'active' : ''}`}
-              onClick={() => setTotalMinutes(m)}
-            >
-              {m}
-              <span className="preset-unit">ふん</span>
-            </button>
-          ))}
+        <div className="spinner-row">
+          <Spinner value={minutes} min={0} max={99} label="ふん" onChange={handleChangeMinutes} />
+          <span className="spinner-colon">:</span>
+          <Spinner value={seconds} min={0} max={59} label="びょう" onChange={handleChangeSeconds} />
         </div>
       </div>
 
@@ -53,7 +91,6 @@ export function SettingsScreen() {
               className="pin-input"
               value={pinInput}
               onChange={(e) => setPinInput(e.target.value)}
-              maxLength={6}
               placeholder="すうじを いれてね"
             />
             <button
@@ -71,7 +108,7 @@ export function SettingsScreen() {
         )}
       </div>
 
-      <button className="btn-start" onClick={handleStart}>
+      <button className="btn-start" onClick={startTimer} disabled={!canStart}>
         スタート！
       </button>
     </div>
