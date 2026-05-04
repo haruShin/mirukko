@@ -22,7 +22,7 @@ interface TimerState {
 
 export const useTimerStore = create<TimerState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       totalMinutes: 30,
       remainingSeconds: 30 * 60,
       isRunning: false,
