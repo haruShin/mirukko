@@ -14,7 +14,7 @@ function getWarningLevel(remainingSeconds: number): 'normal' | 'soon' | 'urgent'
 }
 
 export function TimerScreen() {
-  const { remainingSeconds, totalMinutes, isRunning, tick, resetTimer } = useTimerStore()
+  const { remainingSeconds, durationMinutes, durationSeconds, isRunning, tick, resetTimer } = useTimerStore()
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const prevWarningRef = useRef<'normal' | 'soon' | 'urgent'>('normal')
 
@@ -27,7 +27,8 @@ export function TimerScreen() {
   }, [isRunning, tick])
 
   const warning = getWarningLevel(remainingSeconds)
-  const progress = remainingSeconds / (totalMinutes * 60)
+  const totalDuration = durationMinutes * 60 + durationSeconds
+  const progress = totalDuration > 0 ? remainingSeconds / totalDuration : 0
 
   if (warning !== prevWarningRef.current) {
     prevWarningRef.current = warning
